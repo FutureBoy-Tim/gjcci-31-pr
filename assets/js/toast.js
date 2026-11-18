@@ -101,18 +101,22 @@
     if (!result) render(false);
     const text = asText(result);
     let ok = false;
+    // 1) 권한 창이 뜨지 않는 방식(구형 API) 먼저, 2) 막히면 클립보드 API
     try {
-      await navigator.clipboard.writeText(text);
-      ok = true;
-    } catch (e) {
       const ta = document.createElement("textarea");
       ta.value = text;
+      ta.setAttribute("readonly", "");
       ta.style.position = "fixed";
+      ta.style.top = "-1000px";
       ta.style.opacity = "0";
       document.body.appendChild(ta);
       ta.select();
-      try { ok = document.execCommand("copy"); } catch (_) { ok = false; }
+      ta.setSelectionRange(0, text.length);
+      ok = document.execCommand("copy");
       document.body.removeChild(ta);
+    } catch (e) { ok = false; }
+    if (!ok) {
+      try { await navigator.clipboard.writeText(text); ok = true; } catch (e) { ok = false; }
     }
     snack(ok ? "복사했어요. 카톡·문자에 붙여 넣으세요 🥂" : "복사가 막혔어요. 길게 눌러 직접 복사해 주세요.");
   });
