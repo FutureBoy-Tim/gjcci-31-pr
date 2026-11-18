@@ -28,6 +28,43 @@
   </div>
 </header>
 
+<section class="gt-section" id="toastLab">
+  <div class="container">
+    <div class="gt-card">
+      <div class="gt-top">
+        <div class="gt-title">
+          <span class="gt-ico" aria-hidden="true">🥂</span>
+          <div>
+            <h2>연말 건배사 생성기</h2>
+            <p>송년 모임에서 바로 쓰는 31기 전용 한 잔의 멘트</p>
+          </div>
+        </div>
+        <div class="gt-top-right">
+          <span class="gt-badge">2026 YEAR-END</span>
+          <button type="button" class="gt-toggle" id="gtToggle" aria-expanded="true" aria-controls="gtBody"><span>접기</span> ⌃</button>
+        </div>
+      </div>
+      <div class="gt-body" id="gtBody">
+        <div class="gt-chips" id="gtStyles" role="group" aria-label="건배사 스타일"></div>
+        <div class="gt-form">
+          <label class="gt-input">
+            <span class="gt-ico-sm" aria-hidden="true">✍️</span>
+            <input id="gtTarget" type="text" maxlength="24" placeholder="모임명·대상 (선택) 예: 송년회, 다은컴즈" />
+          </label>
+          <select id="gtMember" aria-label="회원 선택 (선택)"></select>
+          <button type="button" class="gt-btn gt-btn-main" id="gtGo">건배사 만들기</button>
+        </div>
+        <div class="gt-result" id="gtResult" aria-live="polite"></div>
+        <div class="gt-actions">
+          <button type="button" class="gt-btn gt-btn-line" id="gtAgain">🎲 다시 뽑기</button>
+          <button type="button" class="gt-btn gt-btn-ghost" id="gtCopy">💬 카톡·문자용 복사</button>
+          <span class="gt-count">42가지 레퍼토리 · 입력을 비우면 31기 기본 멘트</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="hero">
   <div class="container hero-inner">
     <div class="hero-badge">광진구상공회 <b>CEO 아카데미 31기</b> · 2026</div>
@@ -135,5 +172,7 @@
 
 <script src="assets/js/card.js"></script>
 <script src="assets/js/app.js"></script>
+<script src="assets/js/toast-data.js"></script>
+<script src="assets/js/toast.js"></script>
 </body>
 </html>

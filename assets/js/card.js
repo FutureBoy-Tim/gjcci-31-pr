@@ -121,7 +121,7 @@
     ctx.rect(PX, 0, PW, PH);
     ctx.clip();
     if (img) {
-      ctx.fillStyle = "#0A1B33";
+      ctx.fillStyle = "#080F1B";
       ctx.fillRect(PX, 0, PW, PH);
       ctx.imageSmoothingQuality = "high";
       drawCover(ctx, img, PX, 0, PW, PH);
@@ -153,14 +153,21 @@
       ctx.textBaseline = "middle";
       ctx.fillText(ch, PX + PW / 2, CH / 2 + 4);
     }
-    // 사진 왼쪽을 배경에 자연스럽게 녹임
+    // 사진 왼쪽을 배경에 자연스럽게 녹임 (딥블랙 사진용 — 하얗게 뜨지 않도록 카드 네이비로)
     if (img) {
-      const fade = ctx.createLinearGradient(PX, 0, PX + 170, 0);
-      fade.addColorStop(0, "rgba(9,32,65,.92)");
-      fade.addColorStop(0.45, "rgba(9,32,65,.42)");
-      fade.addColorStop(1, "rgba(9,32,65,0)");
+      const fade = ctx.createLinearGradient(PX, 0, PX + 205, 0);
+      fade.addColorStop(0, "rgba(10,32,64,.95)");
+      fade.addColorStop(0.38, "rgba(10,31,62,.55)");
+      fade.addColorStop(0.72, "rgba(9,27,54,.16)");
+      fade.addColorStop(1, "rgba(9,27,54,0)");
       ctx.fillStyle = fade;
-      ctx.fillRect(PX, 0, 170, PH);
+      ctx.fillRect(PX, 0, 205, PH);
+      // 사진 전체에 얇은 네이비 톤을 얹어 카드 배경과 같은 결로
+      const wash = ctx.createLinearGradient(PX, 0, CW, CH);
+      wash.addColorStop(0, "rgba(10,32,64,.30)");
+      wash.addColorStop(1, "rgba(6,19,38,.10)");
+      ctx.fillStyle = wash;
+      ctx.fillRect(PX, 0, PW, PH);
     }
     // 아래쪽 살짝 어둡게
     const bot = ctx.createLinearGradient(0, CH - 120, 0, CH);
