@@ -108,7 +108,7 @@
     glow.addColorStop(0.55, "rgba(201,162,39,.05)");
     glow.addColorStop(1, "rgba(201,162,39,0)");
     ctx.fillStyle = glow;
-    ctx.fillRect(560, 0, 490, CH);
+    ctx.fillRect(0, 0, CW, CH);
 
     // 좌측 상단 얇은 골드 라인
     ctx.fillStyle = "rgba(201,162,39,.55)";
@@ -126,9 +126,10 @@
       ctx.imageSmoothingQuality = "high";
       drawCover(ctx, img, PX, 0, PW, PH);
     } else {
-      const pg = ctx.createLinearGradient(PX, 0, CW, CH);
-      pg.addColorStop(0, "#123055");
-      pg.addColorStop(1, "#08182C");
+      // 사진 미등록 — 배경과 이어지는 모노그램 패널
+      const pg = ctx.createRadialGradient(PX + PW / 2, CH / 2, 40, PX + PW / 2, CH / 2, PW * 0.85);
+      pg.addColorStop(0, "rgba(18,48,85,.55)");
+      pg.addColorStop(1, "rgba(6,19,38,0)");
       ctx.fillStyle = pg;
       ctx.fillRect(PX, 0, PW, PH);
       ctx.strokeStyle = "rgba(201,162,39,.16)";
