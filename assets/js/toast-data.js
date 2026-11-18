@@ -136,6 +136,11 @@
     } else {
       const noMember = pool.filter((x) => !/\{member\}/.test(x.lead + x.chorus + x.tip));
       if (noMember.length) cand = noMember;
+      // 입력이 없을 때는 {target} 틀을 쓰지 않는다 (‘우리 31기에 와 주신…’ 같은 어색한 문장 방지)
+      if (!target || target === DEFAULT_TARGET) {
+        const noTarget = cand.filter((x) => !/\{target\}/.test(x.lead + x.chorus));
+        if (noTarget.length >= 20) cand = noTarget;
+      }
     }
     if (!memberName && target && target !== DEFAULT_TARGET) {
       const withTarget = cand.filter((x) => /\{target\}/.test(x.lead + x.chorus + x.tip));
