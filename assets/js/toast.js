@@ -6,7 +6,8 @@
   const LAB = $("toastLab");
   if (!LAB || !window.ToastGen) return;
 
-  const { STYLES, generate, asText } = window.ToastGen;
+  const TG = window.ToastGen;
+  const { STYLES, generate, asText, esc } = TG;
   const state = { style: "classy", member: "" };
   let result = null;
 
@@ -16,6 +17,32 @@
     (s) => `<button type="button" class="gt-chip${s.id === state.style ? " on" : ""}" data-style="${s.id}" title="${s.hint}">
       <span>${s.label}</span></button>`
   ).join("");
+
+  /* ── 렌더 ── */
+  const box = $("gtResult");
+  function render(isNew) {
+    const target = $("gtTarget").value;
+    result = generate(state.style, target, state.member && target.includes(state.member) ? state.member : "");
+    const lead = result.lead
+      .map((l, i) => `<p class="gt-line"><span class="gt-n">${i + 1}</span>${esc(l)}</p>`)
+      .join("");
+    box.innerHTML = `
+      <div class="gt-block">
+        <div class="gt-lab">선창 <span>리더가 말하는 멘트</span></div>
+        ${lead}
+      </div>
+      <div class="gt-block gt-chorus-block">
+        <div class="gt-lab">후창 <span>다 같이 외치는 구호</span></div>
+        <p class="gt-chorus">${esc(result.chorus)}</p>
+      </div>
+      <p class="gt-tip"><span>💡</span>${esc(result.tip)}</p>`;
+    box.classList.remove("is-new");
+    if (isNew) {
+      void box.offsetWidth;
+      box.classList.add("is-new");
+    }
+  }
+
   chips.addEventListener("click", (e) => {
     const b = e.target.closest(".gt-chip");
     if (!b) return;
@@ -33,14 +60,14 @@
       .forEach((m) => {
         const t = m.title && !["-", "비공개", ""].includes(m.title) ? m.title : "대표";
         const label = `${m.name} ${t}`;
-        opts.push(`<option value="${m.id}">${label.replace(/</g, "&lt;")}</option>`);
+        opts.push(`<option value="${esc(m.id)}">${esc(label)}</option>`);
       });
     sel.innerHTML = opts.join("");
   }
   const waitMembers = (tries) => {
     if (window.__members) return fillMembers(window.__members);
-    if (tries > 40) return;
-    setTimeout(() => waitMembers(tries + 1), 120);
+    if (tries > 60) return;
+    setTimeout(() => waitMembers(tries + 1), 150);
   };
   waitMembers(0);
 
@@ -54,36 +81,6 @@
       state.member = "";
     }
   });
-
-  /* ── 렌더 ── */
-  const box = $("gtResult");
-  function render(isNew) {
-    const target = $("gtTarget").value;
-    result = generate(state.style, target, state.member && target.includes(state.member) ? state.member : "");
-    const lead = result.lead
-      .map((l, i) => `<p class="gt-line"><span class="gt-n">${i + 1}</span>${escapeHtml(l)}</p>`)
-      .join("");
-    box.innerHTML = `
-      <div class="gt-block">
-        <div class="gt-lab">선창 <span>리더가 말하는 멘트</span></div>
-        ${lead}
-      </div>
-      <div class="gt-block gt-chorus-block">
-        <div class="gt-lab">후창 <span>다 같이 외치는 구호</span></div>
-        <p class="gt-chorus">${escapeHtml(result.chorus)}</p>
-      </div>
-      <p class="gt-tip"><span>💡</span>${escapeHtml(result.tip)}</p>`;
-    box.classList.remove("is-new");
-    if (isNew) {
-      // 강제 리플로우 후 애니메이션 재생
-      void box.offsetWidth;
-      box.classList.add("is-new");
-    }
-  }
-
-  function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  }
 
   /* ── 버튼 ── */
   $("gtGo").addEventListener("click", () => render(true));
@@ -149,13 +146,20 @@
     if (localStorage.getItem("gt-closed") === "1") toggle.click();
   } catch (e) { /* storage 없음 */ }
 
-  /* ── 레퍼토리 수 표시 ── */
-  try {
-    const n = Object.values(window.ToastGen.DB).reduce((a, b) => a + b.length, 0);
+  /* ── 수록 개수 표시 ── */
+  function showCount() {
+    const n = (TG.META && TG.META.count) || TG.count();
+    if (!n) return;
     const c = document.querySelector(".gt-count");
-    if (c) c.textContent = `${n}가지 레퍼토리 · 입력을 비우면 31기 기본 멘트`;
-  } catch (e) { /* noop */ }
+    if (c) c.textContent = `${n.toLocaleString("ko-KR")}가지 레퍼토리 · 입력을 비우면 랜덤`;
+    const badge = $("gtBadge");
+    if (badge) badge.textContent = n >= 1000 ? "1,000+ 건배사 수록" : `${n}가지 수록`;
+  }
 
-  /* ── 최초 1회 자동 생성 ── */
-  render(false);
+  /* ── 최초 렌더: 데이터 로드 후 1회 ── */
+  box.innerHTML = '<p class="gt-loading">건배사 레퍼토리를 불러오는 중…</p>';
+  TG.ready.then(() => {
+    showCount();
+    render(false);
+  });
 })();
