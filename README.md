@@ -13,10 +13,19 @@
 ├─ member.html                회원 상세 (member.html?id=m01)
 ├─ data/members.json          회원 데이터 (연락처 전체 공개)
 ├─ assets/css/style.css
-├─ assets/js/app.js           데이터 로드 · 검색 · 필터 · 상세 렌더
+├─ assets/js/card.js          31기 통일 디지털 명함 렌더러 (Canvas → 화면·PNG 공용)
+├─ assets/js/app.js           데이터 로드 · 검색 · 필터 · 상세 렌더 · 명함 저장
+├─ assets/fonts/Pretendard-31.woff2  명함용 Pretendard 서브셋 (190KB)
 ├─ assets/members/{id}/profile.png  회원 프로필 사진 (44명)
 └─ robots.txt                 검색엔진 수집 허용
 ```
+
+## 디지털 명함
+
+- 모든 회원이 같은 디자인(가로형 1.75:1 명함)으로 보입니다. 좌측에 이름·직위·회사·업종·연락처, 우측에 프로필 사진이 들어가고, 사진이 없는 회원은 이름 첫 글자 모노그램으로 대체됩니다.
+- `assets/js/card.js`가 1050×600 디자인 단위로 Canvas에 그립니다. 목록 카드·상세 명함·다운로드 PNG가 모두 이 한 함수로 그려져 디자인이 어긋나지 않습니다.
+- 상세 페이지에서 **명함 이미지 저장(PNG, 1575×900)**, **연락처 저장(vCard .vcf)**, **명함 링크 복사**가 됩니다. 명함을 누르면 확대 보기가 열립니다.
+- 회원 추가 시 `data/members.json`에 넣으면 카드가 자동으로 생성됩니다.
 
 ## 개인정보
 
