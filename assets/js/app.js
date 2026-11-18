@@ -188,8 +188,8 @@ async function initDetail() {
         <div class="panel">
           <h2>연락처 공개 범위</h2>
           <p>이 명부는 31기 회원 간 상호 연결을 위해 <b>휴대폰·이메일·사업자등록번호·프로필 사진을 모두 공개</b>하고 있습니다.
-          회원수첩에 등록된 정보를 그대로 옮겼으며, 검색엔진에는 수집되지 않도록 설정되어 있습니다.</p>
-          <div class="locked-note">현재 설정 — 휴대폰 ${window.SITE_CONFIG.showMobile ? "공개" : "비노출"} · 이메일 ${window.SITE_CONFIG.showEmail ? "공개" : "비노출"} · 사업자번호 ${window.SITE_CONFIG.showBizno ? "공개" : "비노출"} · 검색엔진 노출 차단
+          회원수첩에 등록된 정보를 그대로 옮겼으며, 검색엔진 검색 결과에도 노출됩니다.</p>
+          <div class="locked-note">현재 설정 — 휴대폰 ${window.SITE_CONFIG.showMobile ? "공개" : "비노출"} · 이메일 ${window.SITE_CONFIG.showEmail ? "공개" : "비노출"} · 사업자번호 ${window.SITE_CONFIG.showBizno ? "공개" : "비노출"} · 검색엔진 노출 허용
           · 정보 수정이나 비공개 요청은 아래 문의처로 알려 주세요.</div>
         </div>
         ${related.length ? `
