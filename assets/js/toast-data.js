@@ -125,18 +125,24 @@
       return { styleId, target, lead: a.lines, chorus: a.chorus, tip: a.tip, acrostic: true };
     }
     const pool = (DB[styleId] && DB[styleId].length ? DB[styleId] : DB.classy);
-    // 이름·모임명이 있으면 그 값을 실제로 쓰는 멘트를 우선한다
+    // 이름·모임명이 있으면 그 값을 실제로 쓰는 멘트를 우선하되,
+    // 그런 멘트가 적으면 일반 멘트와 섞어 레퍼토리가 마르지 않게 한다.
+    const MIN_TAILORED = 6;
     let cand = pool;
     if (memberName) {
       const withMember = pool.filter((x) => /\{member\}/.test(x.lead + x.chorus + x.tip));
-      if (withMember.length) cand = withMember;
+      if (withMember.length >= MIN_TAILORED) cand = withMember;
+      else if (withMember.length) cand = withMember.concat(pool);
     } else {
       const noMember = pool.filter((x) => !/\{member\}/.test(x.lead + x.chorus + x.tip));
       if (noMember.length) cand = noMember;
     }
     if (!memberName && target && target !== DEFAULT_TARGET) {
       const withTarget = cand.filter((x) => /\{target\}/.test(x.lead + x.chorus + x.tip));
-      if (withTarget.length) cand = withTarget;
+      if (withTarget.length) {
+        const p = withTarget.length >= 6 ? 0.8 : 0.5;
+        if (Math.random() < p) cand = withTarget;
+      }
     }
     const item = pick(cand, styleId);
     return {
