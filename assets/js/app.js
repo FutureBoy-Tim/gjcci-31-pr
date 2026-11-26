@@ -73,6 +73,14 @@ function toast(msg) {
 /* ── 세로형 명함 (히어로·흐름 영역) ─────────── */
 const escH = v => String(v == null ? "" : v).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
+// 사진 위 표시: 실제 명함 등록 여부
+const hasRealCard = m => !!(m.realCard && (m.realCard.front || m.realCard.back));
+function realFlagHTML(m, cls) {
+  return hasRealCard(m)
+    ? `<span class="${cls} on">✓ 명함 등록</span>`
+    : `<span class="${cls} off">명함 미등록</span>`;
+}
+
 function vCardHTML(m, opts) {
   opts = opts || {};
   const title = isBlank(m.title) ? "" : `<small>${escH(m.title)}</small>`;
@@ -84,7 +92,7 @@ function vCardHTML(m, opts) {
     : `<span class="v-mono">${escH((m.name || "?").trim().slice(0, 1))}</span>`;
   const inner = `
       <div class="v-top"><span>광진구상공회 31기</span><span>CEO</span></div>
-      <div class="v-photo">${photo}${m.realCard && (m.realCard.front || m.realCard.back) ? '<span class="v-real">실제 명함</span>' : ""}</div>
+      <div class="v-photo">${photo}${realFlagHTML(m, "v-real")}</div>
       <div class="v-body">
         <div class="v-name">${escH(m.name)}${title}</div>
         <div class="v-co">${escH(co)}</div>
@@ -97,8 +105,8 @@ function vCardHTML(m, opts) {
 function initFlow(members) {
   const track = document.getElementById("flowTrack");
   if (track) {
-    // 사진·회사 정보가 있는 회원이 먼저 보이도록 정렬 (같은 조건이면 회원 번호순)
-    const score = m => (m.photo ? 2 : 0) + (isBlank(m.company) ? 0 : 1);
+    // 실제 명함 등록 회원 → 사진·회사 정보가 있는 회원 순으로 먼저 보이도록 정렬 (같은 조건이면 회원 번호순)
+    const score = m => (hasRealCard(m) ? 4 : 0) + (m.photo ? 2 : 0) + (isBlank(m.company) ? 0 : 1);
     const list = [...members].sort((a, b) => score(b) - score(a) || a.order - b.order);
     track.innerHTML = list.map(m => vCardHTML(m)).join("") + list.map(m => vCardHTML(m, { hidden: true })).join("");
     track.style.setProperty("--flow-dur", Math.max(60, list.length * 4) + "s");
@@ -249,7 +257,8 @@ async function initIndex() {
     grid.innerHTML = list.map(m => `
       <a class="biz-card" href="member.html?id=${encodeURIComponent(m.id)}" aria-label="${ariaOf(m)}">
         <canvas data-member="${m.id}" role="img" aria-hidden="true"></canvas>
-        <span class="sr-only">${m.name}${isBlank(m.title) ? "" : " " + m.title} · ${cardLine(m)}${isBlank(m.mobile) ? "" : " · " + m.mobile}</span>
+        <span class="sr-only">${m.name}${isBlank(m.title) ? "" : " " + m.title} · ${cardLine(m)}${isBlank(m.mobile) ? "" : " · " + m.mobile} · 실제 명함 ${hasRealCard(m) ? "등록" : "미등록"}</span>
+        ${realFlagHTML(m, "card-flag")}
         <span class="peek" aria-hidden="true">↗</span>
       </a>`).join("");
     window.CardArt.fontReady.then(observeCards);
