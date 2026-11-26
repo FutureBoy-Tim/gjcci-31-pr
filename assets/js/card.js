@@ -278,6 +278,21 @@
       return await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
     },
 
+    // 저장용 JPG (갤러리·메신저 어디서나 열리는 형식)
+    async toJPEG(m, scale, quality) {
+      scale = scale || 1.5;
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(CW * scale);
+      canvas.height = Math.round(CH * scale);
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.setTransform(scale, 0, 0, scale, 0, 0);
+      const img = await loadPhoto(m.photo);
+      drawCard(ctx, m, img);
+      return await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", quality || 0.92));
+    },
+
     async toDataURL(m, scale) {
       scale = scale || 1.6;
       const canvas = document.createElement("canvas");

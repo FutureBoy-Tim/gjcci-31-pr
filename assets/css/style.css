@@ -217,7 +217,7 @@ a.v-card:focus-visible{outline:3px solid var(--brand);outline-offset:3px}
   border-radius:var(--r-xl);padding:clamp(14px,3vw,30px);margin:18px 0 0;box-shadow:var(--shadow-sm);
   display:grid;place-items:center}
 .card-stage-inner{width:100%;max-width:780px;position:relative;border-radius:16px;overflow:hidden;
-  box-shadow:0 18px 50px rgba(120,60,0,.22);cursor:zoom-in}
+  box-shadow:0 18px 50px rgba(120,60,0,.22);cursor:pointer}
 .card-stage-inner canvas{display:block;width:100%;height:auto;aspect-ratio:1050/600}
 .card-stage-inner:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
 .card-hint{margin:10px 0 0;text-align:center;font-size:12.5px;color:var(--ink-3)}
@@ -439,3 +439,13 @@ a.v-card:focus-visible{outline:3px solid var(--brand);outline-offset:3px}
 .gt-count{color:var(--ink-3)}
 .gt-snack{background:#1B2233;border:1px solid rgba(255,130,0,.5)}
 #share,#members,#how,#contact,#privacy{scroll-margin-top:70px}
+
+/* ── 저장 안내 화면 ───────────────────── */
+.lb-inner{display:flex;flex-direction:column;align-items:center;gap:14px;max-width:min(1100px,96vw)}
+.lb-tip{margin:0;color:#fff;font-size:15.5px;font-weight:700;text-align:center;background:rgba(255,130,0,.92);
+  padding:10px 16px;border-radius:999px}
+.lb-tip b{font-weight:900}
+.lightbox .lb-inner img{max-width:100%;max-height:66vh;border-radius:14px;box-shadow:0 30px 80px rgba(0,0,0,.5);
+  -webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto}
+.lb-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.lb-actions .btn{padding:12px 18px;font-size:14.5px}

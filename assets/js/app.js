@@ -304,10 +304,74 @@ function fileNameOf(m, ext) {
   return `광진구상공회31기_${safe}_명함.${ext}`;
 }
 
-async function downloadPNG(m) {
-  const blob = await window.CardArt.toPNG(m, 1.5);
-  if (!blob) throw new Error("이미지를 만들지 못했습니다");
-  saveBlob(blob, fileNameOf(m, "png"));
+/* ── 명함 이미지 저장 ─────────────────────
+ * 1) 휴대폰: 공유 시트(이미지 저장 → 갤러리)   2) PC·일반 브라우저: 파일 내려받기
+ * 3) 카카오톡 등 앱 안 브라우저: 저장용 이미지를 띄우고 길게 눌러 저장하도록 안내
+ * 어떤 경우에도 오류 문구로 끝나지 않고 다음 방법으로 넘어간다. */
+const UA = navigator.userAgent || "";
+const IS_MOBILE = /Android|iPhone|iPad|iPod/i.test(UA) || (navigator.maxTouchPoints > 1 && /Macintosh/i.test(UA));
+const IN_APP = /KAKAOTALK|NAVER\(inapp|Instagram|FBAN|FBAV|Line\/|DaumApps|BAND\//i.test(UA);
+const cardImageUrl = m => `assets/cards/${encodeURIComponent(m.id)}.jpg`;
+const cardFiles = new Map();   // 회원 id → 준비된 이미지 파일(Promise)
+
+function prepareCardFile(m) {
+  if (cardFiles.has(m.id)) return cardFiles.get(m.id);
+  const p = (async () => {
+    let blob = null;
+    try {
+      const res = await fetch(cardImageUrl(m));
+      if (res.ok) blob = await res.blob();
+    } catch (e) { /* 아래에서 직접 그린다 */ }
+    if (!blob || !/^image\//.test(blob.type) || blob.size < 2000) {
+      blob = await window.CardArt.toJPEG(m, 1.5, 0.92);
+    }
+    if (!blob) throw new Error("no image");
+    const file = new File([blob], fileNameOf(m, "jpg"), { type: "image/jpeg" });
+    p.ready = file;
+    return file;
+  })();
+  p.catch(() => cardFiles.delete(m.id));
+  cardFiles.set(m.id, p);
+  return p;
+}
+
+function canShareFile(file) {
+  try { return !!(navigator.share && navigator.canShare && navigator.canShare({ files: [file] })); }
+  catch (e) { return false; }
+}
+
+// 반환값: "shared" | "downloaded" | "manual" | "cancel"
+async function saveCardImage(m) {
+  const p = prepareCardFile(m);
+  let file = p.ready;
+  if (!file) {
+    try { file = await p; } catch (e) { openSaveGuide(m); return "manual"; }
+  }
+  if (IS_MOBILE && canShareFile(file)) {
+    try {
+      await navigator.share({ files: [file] });
+      return "shared";
+    } catch (e) {
+      if (e && e.name === "AbortError") return "cancel";
+      // 권한·환경 문제면 아래 방법으로 계속
+    }
+  }
+  if (IN_APP || (IS_MOBILE && /iPhone|iPad|iPod/i.test(UA) && !canShareFile(file))) {
+    openSaveGuide(m);
+    return "manual";
+  }
+  try {
+    saveBlob(file, file.name);
+    return "downloaded";
+  } catch (e) {
+    openSaveGuide(m);
+    return "manual";
+  }
+}
+
+function saveResultToast(r) {
+  if (r === "downloaded") toast(IS_MOBILE ? "명함 이미지를 저장했습니다 (갤러리·다운로드 폴더)" : "명함 이미지를 저장했습니다");
+  else if (r === "shared") toast("'이미지 저장'을 누르면 갤러리에 저장됩니다");
 }
 
 function downloadVCF(m) {
@@ -315,8 +379,8 @@ function downloadVCF(m) {
   saveBlob(blob, fileNameOf(m, "vcf"));
 }
 
-/* ── 확대 보기 ──────────────────────────── */
-function openLightbox(dataUrl, m) {
+/* ── 저장 안내 화면 (길게 눌러 저장) ─────── */
+function openSaveGuide(m) {
   let box = document.getElementById("lightbox");
   if (!box) {
     box = document.createElement("div");
@@ -324,24 +388,33 @@ function openLightbox(dataUrl, m) {
     box.className = "lightbox";
     box.innerHTML = `
       <button class="lb-close" aria-label="닫기">✕</button>
-      <img alt="" />
-      <button class="btn btn-accent lb-dl">⬇ 명함 이미지 저장</button>`;
+      <div class="lb-inner">
+        <p class="lb-tip">👇 이미지를 <b>길게 눌러</b> <b>'이미지 저장'</b>을 선택하세요</p>
+        <img alt="" />
+        <div class="lb-actions"></div>
+      </div>`;
     document.body.appendChild(box);
     box.addEventListener("click", e => {
       if (e.target === box || e.target.closest(".lb-close")) closeLightbox();
     });
     document.addEventListener("keydown", e => { if (e.key === "Escape") closeLightbox(); });
   }
-  box.querySelector("img").src = dataUrl;
-  box.querySelector("img").alt = `${m.name} 디지털 명함`;
-  const dl = box.querySelector(".lb-dl");
-  dl.onclick = async (e) => {
-    e.stopPropagation();
-    dl.disabled = true;
-    try { await downloadPNG(m); toast("명함 이미지를 저장했습니다"); }
-    catch (err) { toast("저장에 실패했습니다. 다시 시도해 주세요"); }
-    dl.disabled = false;
+  const img = box.querySelector("img");
+  img.alt = `${m.name} 디지털 명함`;
+  img.onerror = async () => {
+    img.onerror = null;
+    try { img.src = await window.CardArt.toDataURL(m, 1.2); } catch (e) { /* 그대로 둔다 */ }
   };
+  img.src = cardImageUrl(m);
+  const acts = box.querySelector(".lb-actions");
+  const abs = new URL(cardImageUrl(m), location.href).href;
+  let html = `<a class="btn btn-accent" href="${cardImageUrl(m)}" download="${escH(fileNameOf(m, "jpg"))}">⬇ 파일로 내려받기</a>`;
+  if (/KAKAOTALK/i.test(UA)) {
+    html += `<a class="btn btn-line" href="kakaotalk://web/openExternal?url=${encodeURIComponent(location.href)}">🌐 다른 브라우저로 열기</a>`;
+  } else {
+    html += `<a class="btn btn-line" href="${abs}" target="_blank" rel="noopener">🖼 이미지만 새 창으로</a>`;
+  }
+  acts.innerHTML = html;
   box.classList.add("on");
 }
 function closeLightbox() {
@@ -411,14 +484,14 @@ async function initDetail() {
     <div class="member-head"><a class="back-link" href="index.html#members">← 전체 회원 목록</a></div>
 
     <section class="card-stage">
-      <div class="card-stage-inner" id="cardStage" tabindex="0" role="button" aria-label="${m.name} 디지털 명함 크게 보기">
+      <div class="card-stage-inner" id="cardStage" tabindex="0" role="button" aria-label="${m.name} 디지털 명함 이미지 저장">
         <canvas id="memberCard"></canvas>
       </div>
     </section>
-    <p class="card-hint">명함을 누르면 크게 볼 수 있습니다.</p>
+    <p class="card-hint">명함을 누르면 휴대폰 갤러리(PC는 다운로드 폴더)에 저장됩니다.</p>
 
     <div class="card-actions">
-      <button class="btn btn-primary" id="btnPng">⬇ 명함 이미지 저장 <span class="x">(PNG)</span></button>
+      <button class="btn btn-primary" id="btnPng">⬇ 명함 이미지 저장</button>
       <button class="btn btn-accent" id="btnVcf">＋ 연락처에 저장 <span class="x">(vCard)</span></button>
       <button class="btn btn-line" id="btnCopy">🔗 명함 링크 복사</button>
     </div>
@@ -475,24 +548,20 @@ async function initDetail() {
     rt = setTimeout(() => { if (canvas._renderedW !== Math.round(canvas.clientWidth)) paint(); }, 180);
   });
 
-  let previewUrl = null;
-  async function preview() {
-    if (!previewUrl) previewUrl = await window.CardArt.toDataURL(m, 1.2);
-    openLightbox(previewUrl, m);
-  }
-  stage.addEventListener("click", preview);
-  stage.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); preview(); } });
+  // 누르는 즉시 저장되도록 이미지 파일을 미리 준비해 둔다
+  prepareCardFile(m).catch(() => {});
 
-  document.getElementById("btnPng").addEventListener("click", async (e) => {
-    const b = e.currentTarget;
-    b.disabled = true;
-    const label = b.innerHTML;
-    b.innerHTML = "저장 중…";
-    try { await downloadPNG(m); toast("명함 이미지를 저장했습니다"); }
-    catch (err) { toast("저장에 실패했습니다. 다시 시도해 주세요"); }
-    b.innerHTML = label;
-    b.disabled = false;
-  });
+  let saving = false;
+  async function saveNow() {
+    if (saving) return;
+    saving = true;
+    try { saveResultToast(await saveCardImage(m)); }
+    catch (err) { openSaveGuide(m); }
+    saving = false;
+  }
+  stage.addEventListener("click", saveNow);
+  stage.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); saveNow(); } });
+  document.getElementById("btnPng").addEventListener("click", saveNow);
 
   document.getElementById("btnVcf").addEventListener("click", () => {
     try { downloadVCF(m); toast("연락처 파일(.vcf)을 저장했습니다"); }
