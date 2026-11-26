@@ -16,7 +16,7 @@
 ├─ assets/js/card.js          31기 통일 디지털 명함 렌더러 (Canvas → 화면·PNG 공용)
 ├─ assets/js/app.js           데이터 로드 · 검색 · 필터 · 상세 렌더 · 명함 저장
 ├─ assets/fonts/Pretendard-31.woff2  명함용 Pretendard 서브셋 (190KB)
-├─ assets/members/{id}/profile.png  회원 프로필 사진 (44명)
+├─ assets/members/{id}/profile.jpg  회원 프로필 사진 (44명)
 └─ robots.txt                 검색엔진 수집 허용
 ```
 

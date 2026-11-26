@@ -122,7 +122,7 @@
     ctx.shadowBlur = 28;
     ctx.shadowOffsetY = 10;
     roundRect(ctx, PX, PY, PW, PH, PR);
-    ctx.fillStyle = img ? "#10141C" : ORANGE_BG;
+    ctx.fillStyle = ORANGE_BG;
     ctx.fill();
     ctx.restore();
 
