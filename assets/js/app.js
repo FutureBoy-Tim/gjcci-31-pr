@@ -70,6 +70,77 @@ function toast(msg) {
   el._t = setTimeout(() => el.classList.remove("on"), 2200);
 }
 
+/* ── 세로형 명함 (히어로·흐름 영역) ─────────── */
+const escH = v => String(v == null ? "" : v).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+function vCardHTML(m, opts) {
+  opts = opts || {};
+  const title = isBlank(m.title) ? "" : `<small>${escH(m.title)}</small>`;
+  const co = isBlank(m.company) ? "광진구상공회 CEO 31기" : m.company;
+  const hasCat = !isBlank(m.category) && m.category !== "업종 미입력";
+  const tagText = !isBlank(m.industry) ? m.industry : (hasCat ? m.category : "CEO 아카데미 31기");
+  const photo = m.photo
+    ? `<img src="${escH(m.photo)}" alt="" loading="${opts.eager ? "eager" : "lazy"}" decoding="async" />`
+    : `<span class="v-mono">${escH((m.name || "?").trim().slice(0, 1))}</span>`;
+  const inner = `
+      <div class="v-top"><span>광진구상공회 31기</span><span>CEO</span></div>
+      <div class="v-photo">${photo}</div>
+      <div class="v-body">
+        <div class="v-name">${escH(m.name)}${title}</div>
+        <div class="v-co">${escH(co)}</div>
+        <span class="v-tag${!isBlank(m.industry) || hasCat ? "" : " muted"}">${escH(tagText)}</span>
+      </div>`;
+  if (opts.plain) return `<div class="v-card">${inner}</div>`;
+  return `<a class="v-card" href="member.html?id=${encodeURIComponent(m.id)}"${opts.hidden ? ' aria-hidden="true" tabindex="-1"' : ` aria-label="${escH(ariaOf(m))}"`}>${inner}</a>`;
+}
+
+function initFlow(members) {
+  const track = document.getElementById("flowTrack");
+  if (track) {
+    // 사진·회사 정보가 있는 회원이 먼저 보이도록 정렬 (같은 조건이면 회원 번호순)
+    const score = m => (m.photo ? 2 : 0) + (isBlank(m.company) ? 0 : 1);
+    const list = [...members].sort((a, b) => score(b) - score(a) || a.order - b.order);
+    track.innerHTML = list.map(m => vCardHTML(m)).join("") + list.map(m => vCardHTML(m, { hidden: true })).join("");
+    track.style.setProperty("--flow-dur", Math.max(60, list.length * 4) + "s");
+    const fc = document.getElementById("flowCount");
+    if (fc) fc.textContent = members.length;
+  }
+  const art = document.getElementById("heroArt");
+  if (art) {
+    const pick = members.filter(m => m.photo && !isBlank(m.company)).slice(0, 3);
+    art.innerHTML = pick.map(m => vCardHTML(m, { plain: true, eager: true })).join("");
+  }
+}
+
+function copyText(text) {
+  if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text);
+  return new Promise((resolve, reject) => {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.cssText = "position:fixed;left:-9999px;top:0";
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy") ? resolve() : reject(new Error("copy")); }
+    catch (e) { reject(e); }
+    ta.remove();
+  });
+}
+
+function initShare(members) {
+  const url = SITE_URL + "/";
+  const msg = `광진구상공회 CEO 아카데미 31기 회원 명부입니다.\n회원 ${members.length}인의 디지털 명함을 이름·회사·업종으로 찾아보실 수 있습니다.\n${url}`;
+  const on = (id, fn) => { const el = document.getElementById(id); if (el) el.addEventListener("click", fn); };
+  on("shareCopy", () => copyText(url).then(() => toast("링크를 복사했습니다")).catch(() => toast(url)));
+  on("shareMsg", () => copyText(msg).then(() => toast("안내 문구를 복사했습니다")).catch(() => toast("복사에 실패했습니다")));
+  const nat = document.getElementById("shareNative");
+  if (nat) {
+    if (!navigator.share) nat.style.display = "none";
+    else nat.addEventListener("click", () => {
+      navigator.share({ title: "광진구상공회 CEO 31기 회원 명부", text: msg.split("\n").slice(0, 2).join("\n"), url }).catch(() => {});
+    });
+  }
+}
+
 /* ── 목록 명함 그리기 (보이는 것만 그리고, 멀어지면 메모리 반환) ── */
 let cardIO = null;
 
@@ -128,6 +199,8 @@ async function initIndex() {
   }
   const members = data.members;
   window.__members = members;
+  initFlow(members);
+  initShare(members);
   const state = { q: "", cat: "전체" };
 
   // 상단 통계

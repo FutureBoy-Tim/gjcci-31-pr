@@ -8,8 +8,8 @@
 
   const CW = 1050, CH = 600;
   const FONT = '"Pretendard31","Pretendard Variable",Pretendard,"Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif';
-  const NAVY_1 = "#0D2A52", NAVY_2 = "#061326";
-  const GOLD = "#C9A227", GOLD_LIGHT = "#E7CD8A", GOLD_SOFT = "#F0DFB6";
+  const ORANGE = "#FF8200", ORANGE_DEEP = "#E86A00", ORANGE_BG = "#FFF1DF";
+  const INK = "#0E1422", INK_2 = "#3A435A";
   const BLANK = ["-", "", null, undefined, "비공개"];
 
   const isBlank = (v) => BLANK.includes(typeof v === "string" ? v.trim() : v);
@@ -34,7 +34,7 @@
   function text(ctx, str, x, y, o) {
     o = o || {};
     setFont(ctx, o.size || 26, o.weight || 600, o.spacing || 0);
-    ctx.fillStyle = o.color || "#fff";
+    ctx.fillStyle = o.color || "#0E1422";
     ctx.textAlign = o.align || "left";
     ctx.textBaseline = o.baseline || "alphabetic";
     if (o.alpha != null) ctx.globalAlpha = o.alpha;
@@ -89,114 +89,82 @@
     ctx.drawImage(img, dx, dy, dw, dh);
   }
 
-  /* ── 명함 그리기 ──────────────────────── */
+  /* ── 명함 그리기 (밝은 화이트 + 주황) ──────── */
   function drawCard(ctx, m, img) {
     ctx.save();
     ctx.clearRect(0, 0, CW, CH);
 
-    // 배경
+    // 배경: 화이트 → 아주 옅은 크림
     const bg = ctx.createLinearGradient(0, 0, CW, CH);
-    bg.addColorStop(0, NAVY_1);
-    bg.addColorStop(0.55, "#0A2144");
-    bg.addColorStop(1, NAVY_2);
+    bg.addColorStop(0, "#FFFFFF");
+    bg.addColorStop(1, "#FFF6EA");
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, CW, CH);
 
-    // 은은한 골드 광원
-    const glow = ctx.createRadialGradient(940, 40, 20, 940, 40, 520);
-    glow.addColorStop(0, "rgba(201,162,39,.22)");
-    glow.addColorStop(0.55, "rgba(201,162,39,.05)");
-    glow.addColorStop(1, "rgba(201,162,39,0)");
-    ctx.fillStyle = glow;
-    ctx.fillRect(0, 0, CW, CH);
+    // 상단 주황 밴드
+    const BAND = 72;
+    const band = ctx.createLinearGradient(0, 0, CW, 0);
+    band.addColorStop(0, ORANGE);
+    band.addColorStop(1, "#FFA63D");
+    ctx.fillStyle = band;
+    ctx.fillRect(0, 0, CW, BAND);
+    text(ctx, "광진구상공회 CEO 아카데미 31기", 56, 46, { size: 24, weight: 800, color: "#FFFFFF", spacing: 0.2 });
+    text(ctx, "CEO CLASS 31", CW - 56, 45, { size: 16, weight: 800, color: "rgba(255,255,255,.9)", spacing: 3, align: "right" });
 
-    // 좌측 상단 얇은 골드 라인
-    ctx.fillStyle = "rgba(201,162,39,.55)";
-    ctx.fillRect(56, 96, 44, 2);
+    // 하단 얇은 주황 라인
+    ctx.fillStyle = ORANGE;
+    ctx.fillRect(0, CH - 8, CW, 8);
 
-    /* ── 사진 패널 (우측) ── */
-    const PX = 652, PW = CW - PX, PH = CH;
+    /* ── 사진 패널 (우측, 둥근 프레임) ── */
+    const PX = 700, PY = 108, PW = 294, PH = 440, PR = 24;
     ctx.save();
-    ctx.beginPath();
-    ctx.rect(PX, 0, PW, PH);
+    ctx.shadowColor = "rgba(120,60,0,.20)";
+    ctx.shadowBlur = 28;
+    ctx.shadowOffsetY = 10;
+    roundRect(ctx, PX, PY, PW, PH, PR);
+    ctx.fillStyle = img ? "#10141C" : ORANGE_BG;
+    ctx.fill();
+    ctx.restore();
+
+    ctx.save();
+    roundRect(ctx, PX, PY, PW, PH, PR);
     ctx.clip();
     if (img) {
-      ctx.fillStyle = "#080F1B";
-      ctx.fillRect(PX, 0, PW, PH);
       ctx.imageSmoothingQuality = "high";
-      drawCover(ctx, img, PX, 0, PW, PH);
+      drawCover(ctx, img, PX, PY, PW, PH);
     } else {
-      // 사진 미등록 — 배경과 이어지는 모노그램 패널
-      const pg = ctx.createRadialGradient(PX + PW / 2, CH / 2, 40, PX + PW / 2, CH / 2, PW * 0.85);
-      pg.addColorStop(0, "rgba(18,48,85,.55)");
-      pg.addColorStop(1, "rgba(6,19,38,0)");
-      ctx.fillStyle = pg;
-      ctx.fillRect(PX, 0, PW, PH);
-      ctx.strokeStyle = "rgba(201,162,39,.16)";
-      ctx.lineWidth = 1;
-      for (let r = 90; r <= 300; r += 70) {
+      // 사진 미등록 — 주황 모노그램
+      ctx.strokeStyle = "rgba(255,130,0,.16)";
+      ctx.lineWidth = 1.5;
+      for (let r = 80; r <= 260; r += 60) {
         ctx.beginPath();
-        ctx.arc(PX + PW / 2, CH / 2, r, 0, Math.PI * 2);
+        ctx.arc(PX + PW / 2, PY + PH / 2, r, 0, Math.PI * 2);
         ctx.stroke();
       }
       const ch = (m.name || "?").trim().slice(0, 1);
       ctx.beginPath();
-      ctx.arc(PX + PW / 2, CH / 2, 92, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(201,162,39,.16)";
+      ctx.arc(PX + PW / 2, PY + PH / 2, 88, 0, Math.PI * 2);
+      ctx.fillStyle = "#FFFFFF";
       ctx.fill();
-      ctx.strokeStyle = "rgba(201,162,39,.55)";
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = ORANGE;
+      ctx.lineWidth = 3;
       ctx.stroke();
-      setFont(ctx, 84, 800, 0);
-      ctx.fillStyle = GOLD_LIGHT;
+      setFont(ctx, 82, 800, 0);
+      ctx.fillStyle = ORANGE_DEEP;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText(ch, PX + PW / 2, CH / 2 + 4);
+      ctx.fillText(ch, PX + PW / 2, PY + PH / 2 + 4);
     }
-    // 사진 왼쪽을 배경에 자연스럽게 녹임 (딥블랙 사진용 — 하얗게 뜨지 않도록 카드 네이비로)
-    if (img) {
-      const fade = ctx.createLinearGradient(PX, 0, PX + 205, 0);
-      fade.addColorStop(0, "rgba(10,32,64,.95)");
-      fade.addColorStop(0.38, "rgba(10,31,62,.55)");
-      fade.addColorStop(0.72, "rgba(9,27,54,.16)");
-      fade.addColorStop(1, "rgba(9,27,54,0)");
-      ctx.fillStyle = fade;
-      ctx.fillRect(PX, 0, 205, PH);
-      // 사진 전체에 얇은 네이비 톤을 얹어 카드 배경과 같은 결로
-      const wash = ctx.createLinearGradient(PX, 0, CW, CH);
-      wash.addColorStop(0, "rgba(10,32,64,.30)");
-      wash.addColorStop(1, "rgba(6,19,38,.10)");
-      ctx.fillStyle = wash;
-      ctx.fillRect(PX, 0, PW, PH);
-    }
-    // 아래쪽 살짝 어둡게
-    const bot = ctx.createLinearGradient(0, CH - 120, 0, CH);
-    bot.addColorStop(0, "rgba(4,12,24,0)");
-    bot.addColorStop(1, "rgba(4,12,24,.45)");
-    ctx.fillStyle = bot;
-    ctx.fillRect(PX, CH - 120, PW, 120);
     ctx.restore();
-
-    // 사진 경계 골드 헤어라인
-    ctx.fillStyle = "rgba(201,162,39,.5)";
-    ctx.fillRect(PX - 1, 0, 1.6, CH);
-
-    /* ── 상단 배지 ── */
-    const badgeLabel = "광진구상공회 CEO 아카데미 31기";
-    setFont(ctx, 20, 600, 0.6);
-    const btw = ctx.measureText(badgeLabel).width;
-    const bx = 56, by = 48, bh = 38, bw = btw + 40;
-    roundRect(ctx, bx, by, bw, bh, 19);
-    ctx.fillStyle = "rgba(201,162,39,.12)";
-    ctx.fill();
-    ctx.strokeStyle = "rgba(201,162,39,.42)";
-    ctx.lineWidth = 1;
+    // 프레임 테두리
+    roundRect(ctx, PX, PY, PW, PH, PR);
+    ctx.strokeStyle = "rgba(255,130,0,.35)";
+    ctx.lineWidth = 2;
     ctx.stroke();
-    text(ctx, badgeLabel, bx + 20, by + 25, { size: 20, weight: 600, color: GOLD_LIGHT, spacing: 0.6 });
 
     // 회원 번호
-    text(ctx, "No. " + String(m.order || "").padStart(2, "0"), 56, 118, {
-      size: 15, weight: 700, color: "rgba(255,255,255,.42)", spacing: 2
+    text(ctx, "No. " + String(m.order || "").padStart(2, "0"), 56, 122, {
+      size: 15, weight: 800, color: ORANGE_DEEP, spacing: 2
     });
 
     /* ── 이름 · 회사 · 업종 (위쪽 영역 안에서 세로 가운데 정렬) ── */
@@ -209,44 +177,45 @@
     const startY = 150 + Math.max(0, (250 - blockH) / 2);
     const nameBase = startY + 74;
 
-    const nameFit = fitText(ctx, (m.name || "").trim(), 470, 82, 800, 44);
+    const nameFit = fitText(ctx, (m.name || "").trim(), 440, 82, 800, 44);
     setFont(ctx, nameFit.size, 800, -1.5);
-    ctx.fillStyle = "#FFFFFF";
+    ctx.fillStyle = INK;
     ctx.textAlign = "left";
     ctx.textBaseline = "alphabetic";
     ctx.fillText(nameFit.text, 56, nameBase);
     const nameW = ctx.measureText(nameFit.text).width;
 
     if (title) {
-      text(ctx, title, 56 + nameW + 16, nameBase, {
-        size: Math.min(30, Math.max(20, nameFit.size * 0.38)), weight: 600, color: GOLD
-      });
+      const tf = fitText(ctx, title, Math.max(60, 610 - nameW - 16), Math.min(30, Math.max(20, nameFit.size * 0.38)), 700, 16);
+      text(ctx, tf.text, 56 + nameW + 16, nameBase, { size: tf.size, weight: 700, color: ORANGE_DEEP });
     }
 
     let cursorY = nameBase + 62;
     if (company) {
-      const cf = fitText(ctx, company, 560, 40, 700, 22);
-      text(ctx, cf.text, 56, cursorY, { size: cf.size, weight: 700, color: GOLD_SOFT });
+      const cf = fitText(ctx, company, 600, 40, 700, 22);
+      text(ctx, cf.text, 56, cursorY, { size: cf.size, weight: 700, color: INK_2 });
       cursorY += 52;
     }
 
     if (industry) {
-      const indFit = fitText(ctx, industry, 380, 22, 600, 16);
-      setFont(ctx, indFit.size, 600, 0.4);
+      const indFit = fitText(ctx, industry, 420, 22, 700, 16);
+      setFont(ctx, indFit.size, 700, 0.4);
       const iw = ctx.measureText(indFit.text).width + 36;
       roundRect(ctx, 56, cursorY - 4, iw, 40, 20);
-      ctx.fillStyle = "rgba(201,162,39,.10)";
+      ctx.fillStyle = ORANGE_BG;
       ctx.fill();
-      ctx.strokeStyle = "rgba(201,162,39,.5)";
+      ctx.strokeStyle = "rgba(255,130,0,.45)";
       ctx.lineWidth = 1;
       ctx.stroke();
-      text(ctx, indFit.text, 56 + 18, cursorY + 23, { size: indFit.size, weight: 600, color: GOLD_LIGHT, spacing: 0.4 });
+      text(ctx, indFit.text, 56 + 18, cursorY + 23, { size: indFit.size, weight: 700, color: ORANGE_DEEP, spacing: 0.4 });
     }
 
     /* ── 구분선 ── */
     const divY = 404;
-    ctx.fillStyle = "rgba(255,255,255,.16)";
-    ctx.fillRect(56, divY, 500, 1);
+    ctx.fillStyle = "rgba(14,20,34,.10)";
+    ctx.fillRect(56, divY, 600, 1);
+    ctx.fillStyle = ORANGE;
+    ctx.fillRect(56, divY - 1, 56, 3);
 
     /* ── 연락처 ── */
     const mobile = isBlank(m.mobile) ? "" : String(m.mobile).trim();
@@ -261,15 +230,15 @@
 
     let ry = 448;
     rows.forEach(([label, val, size]) => {
-      text(ctx, label, 56, ry, { size: 18, weight: 800, color: GOLD, spacing: 0.5 });
-      const vf = fitText(ctx, val, 500, size, 600, 15);
-      text(ctx, vf.text, 96, ry, { size: vf.size, weight: 600, color: "rgba(255,255,255,.94)" });
+      text(ctx, label, 56, ry, { size: 18, weight: 800, color: ORANGE, spacing: 0.5 });
+      const vf = fitText(ctx, val, 540, size, 600, 15);
+      text(ctx, vf.text, 96, ry, { size: vf.size, weight: 600, color: INK });
       ry += 40;
     });
 
     /* ── 하단 푸터 ── */
-    text(ctx, "GWANGJIN CHAMBER OF COMMERCE  ·  CEO CLASS 31", 56, 566, {
-      size: 12, weight: 700, color: "rgba(255,255,255,.38)", spacing: 1.8
+    text(ctx, "GWANGJIN CHAMBER OF COMMERCE  ·  CEO CLASS 31", 56, 570, {
+      size: 12, weight: 700, color: "rgba(14,20,34,.38)", spacing: 1.8
     });
 
     ctx.restore();

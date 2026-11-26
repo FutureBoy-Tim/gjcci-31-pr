@@ -9,17 +9,17 @@
 <meta property="og:title" content="광진구상공회 CEO 31기 회원 명부" />
 <meta property="og:description" content="광진에서 만나는 52인의 사업 파트너 · 광진구상공회 CEO 아카데미 31기" />
 <meta property="og:url" content="https://futureboy-tim.github.io/gjcci-31-pr/" />
-<meta property="og:image" content="https://futureboy-tim.github.io/gjcci-31-pr/assets/og-image.png" />
-<meta property="og:image:secure_url" content="https://futureboy-tim.github.io/gjcci-31-pr/assets/og-image.png" />
+<meta property="og:image" content="https://futureboy-tim.github.io/gjcci-31-pr/assets/og-image.png?v=2" />
+<meta property="og:image:secure_url" content="https://futureboy-tim.github.io/gjcci-31-pr/assets/og-image.png?v=2" />
 <meta property="og:image:type" content="image/png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 <meta property="og:image:alt" content="광진에서 만나는 52인의 사업 파트너 · 광진구상공회 CEO 아카데미 31기" />
 <meta property="og:locale" content="ko_KR" />
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:image" content="https://futureboy-tim.github.io/gjcci-31-pr/assets/og-image.png" />
+<meta name="twitter:image" content="https://futureboy-tim.github.io/gjcci-31-pr/assets/og-image.png?v=2" />
 <meta property="og:site_name" content="광진구상공회 CEO 31기" />
-<link rel="stylesheet" href="assets/css/style.css" />
+<link rel="stylesheet" href="assets/css/style.css?v=20261126" />
 <link rel="preload" href="assets/fonts/Pretendard-31.woff2" as="font" type="font/woff2" crossorigin />
 </head>
 <body>
@@ -33,63 +33,41 @@
     <nav class="topnav">
       <a href="#members">회원 보기</a>
       <a href="#how">이용 안내</a>
-      <a href="#privacy">개인정보</a>
+      <a href="#toastLab">건배사</a>
       <a href="#contact">문의</a>
+      <a class="nav-share" href="#share">📢 외부에 공유</a>
     </nav>
   </div>
 </header>
 
-<section class="gt-section" id="toastLab">
-  <div class="container">
-    <div class="gt-card">
-      <div class="gt-top">
-        <div class="gt-title">
-          <span class="gt-ico" aria-hidden="true">🥂</span>
-          <div>
-            <h2>연말 건배사 생성기</h2>
-            <p>송년 모임에서 바로 쓰는 1,000가지가 넘는 한 잔의 멘트</p>
-          </div>
-        </div>
-        <div class="gt-top-right">
-          <span class="gt-badge gt-badge-year">2026 YEAR-END</span>
-          <span class="gt-badge gt-badge-count" id="gtBadge">1,000+ 건배사 수록</span>
-          <button type="button" class="gt-toggle" id="gtToggle" aria-expanded="true" aria-controls="gtBody"><span>접기</span> ⌃</button>
-        </div>
+<section class="hero">
+  <div class="container hero-inner">
+    <div class="hero-copy">
+      <div class="hero-badge"><i></i>광진구상공회 <b>CEO 아카데미 31기</b> · 2026</div>
+      <h1>광진에서 만나는<br /><em>52인의 사업 파트너</em></h1>
+      <p class="lead">31기 회원 52인의 <b>디지털 명함</b>을 한곳에 모았습니다. 이름·회사·업종으로 찾고, 명함 이미지와 연락처를 바로 저장하세요.</p>
+      <div class="hero-stats">
+        <div class="hero-stat"><div class="num" id="statTotal">52</div><div class="lab">31기 회원</div></div>
+        <div class="hero-stat"><div class="num" id="statCats">12</div><div class="lab">업종 분류</div></div>
+        <div class="hero-stat"><div class="num" id="statPhoto">44</div><div class="lab">프로필 등록</div></div>
       </div>
-      <div class="gt-body" id="gtBody">
-        <div class="gt-chips" id="gtStyles" role="group" aria-label="건배사 스타일"></div>
-        <div class="gt-form">
-          <label class="gt-input">
-            <span class="gt-ico-sm" aria-hidden="true">✍️</span>
-            <input id="gtTarget" type="text" maxlength="24" placeholder="모임명·대상 (선택) 예: 송년회, 다은컴즈" />
-          </label>
-          <select id="gtMember" aria-label="회원 선택 (선택)"></select>
-          <button type="button" class="gt-btn gt-btn-main" id="gtGo">건배사 만들기</button>
-        </div>
-        <div class="gt-result" id="gtResult" aria-live="polite"></div>
-        <div class="gt-actions">
-          <button type="button" class="gt-btn gt-btn-line" id="gtAgain">🎲 다시 뽑기</button>
-          <button type="button" class="gt-btn gt-btn-ghost" id="gtCopy">💬 카톡·문자용 복사</button>
-          <span class="gt-count">1,100+가지 레퍼토리 · 입력을 비우면 랜덤</span>
-        </div>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="#members">회원 명부 보기 →</a>
+        <a class="btn btn-ghost" href="#share">📢 명부 공유하기</a>
       </div>
     </div>
+    <div class="hero-art" id="heroArt" aria-hidden="true"></div>
   </div>
 </section>
 
-<section class="hero">
-  <div class="container hero-inner">
-    <div class="hero-badge">광진구상공회 <b>CEO 아카데미 31기</b> · 2026</div>
-    <h1>광진에서 만나는<br /><em>52인의 사업 파트너</em></h1>
-    <p class="lead">31기 회원 52인의 <b>통일 디지털 명함</b>을 한곳에 모았습니다. 이름·회사·업종으로 찾고, 명함 이미지와 연락처를 바로 저장하세요.</p>
-    <div class="hero-stats">
-      <div class="hero-stat"><div class="num" id="statTotal">52</div><div class="lab">31기 회원</div></div>
-      <div class="hero-stat"><div class="num" id="statCats">12</div><div class="lab">업종 분류</div></div>
-      <div class="hero-stat"><div class="num" id="statPhoto">44</div><div class="lab">프로필 등록</div></div>
-    </div>
-    <div class="hero-cta">
-      <a class="btn btn-primary" href="#members">회원 명부 보기 →</a>
-      <a class="btn btn-ghost" href="#privacy">개인정보 공개 안내</a>
+<section class="flow-wrap" id="flowSection" aria-label="31기 회원 명함 흐름">
+  <div class="container">
+    <div class="flow-panel">
+      <div class="flow-head">
+        <h2>31기 회원 <b id="flowCount">52</b>인</h2>
+        <p>명함을 누르면 상세 페이지로 이동합니다 · 마우스를 올리면 멈춥니다</p>
+      </div>
+      <div class="flow" id="flow"><div class="flow-track" id="flowTrack"></div></div>
     </div>
   </div>
 </section>
@@ -137,6 +115,26 @@
     </div>
   </section>
 
+  <section class="section" id="share" style="padding-top:0">
+    <div class="container">
+      <div class="share-card">
+        <div class="share-copy">
+          <div class="share-eyebrow">SHARE</div>
+          <h2>동기와 지인께 전해주세요</h2>
+          <p>링크 한 줄로 31기 회원 52인의 명함을 소개할 수 있습니다. 카톡·문자에 바로 붙여 넣을 수 있는 안내 문구도 함께 드립니다.</p>
+        </div>
+        <div class="share-box">
+          <div class="share-url" id="shareUrl">https://futureboy-tim.github.io/gjcci-31-pr/</div>
+          <div class="share-actions">
+            <button type="button" class="btn btn-primary" id="shareCopy">🔗 링크 복사</button>
+            <button type="button" class="btn btn-line" id="shareMsg">💬 안내 문구 복사</button>
+            <button type="button" class="btn btn-line" id="shareNative">📤 공유하기</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="section" id="privacy" style="padding-top:0">
     <div class="container">
       <div class="panel">
@@ -175,16 +173,54 @@
   </section>
 </main>
 
+<section class="gt-section" id="toastLab">
+  <div class="container">
+    <div class="gt-card">
+      <div class="gt-top">
+        <div class="gt-title">
+          <span class="gt-ico" aria-hidden="true">🥂</span>
+          <div>
+            <h2>연말 건배사 생성기</h2>
+            <p>송년 모임에서 바로 쓰는 1,000가지가 넘는 한 잔의 멘트</p>
+          </div>
+        </div>
+        <div class="gt-top-right">
+          <span class="gt-badge gt-badge-year">2026 YEAR-END</span>
+          <span class="gt-badge gt-badge-count" id="gtBadge">1,000+ 건배사 수록</span>
+          <button type="button" class="gt-toggle" id="gtToggle" aria-expanded="true" aria-controls="gtBody"><span>접기</span> ⌃</button>
+        </div>
+      </div>
+      <div class="gt-body" id="gtBody">
+        <div class="gt-chips" id="gtStyles" role="group" aria-label="건배사 스타일"></div>
+        <div class="gt-form">
+          <label class="gt-input">
+            <span class="gt-ico-sm" aria-hidden="true">✍️</span>
+            <input id="gtTarget" type="text" maxlength="24" placeholder="모임명·대상 (선택) 예: 송년회, 다은컴즈" />
+          </label>
+          <select id="gtMember" aria-label="회원 선택 (선택)"></select>
+          <button type="button" class="gt-btn gt-btn-main" id="gtGo">건배사 만들기</button>
+        </div>
+        <div class="gt-result" id="gtResult" aria-live="polite"></div>
+        <div class="gt-actions">
+          <button type="button" class="gt-btn gt-btn-line" id="gtAgain">🎲 다시 뽑기</button>
+          <button type="button" class="gt-btn gt-btn-ghost" id="gtCopy">💬 카톡·문자용 복사</button>
+          <span class="gt-count">1,100+가지 레퍼토리 · 입력을 비우면 랜덤</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <footer class="footer">
   <div class="container footer-inner">
-    <div><b>광진구상공회 CEO 아카데미 31기</b> · 회원 명부 (내부 공유용)</div>
+    <div><b>광진구상공회 CEO 아카데미 31기</b> · 회원 명부</div>
     <div>데이터 출처: 광진구상공회 회원수첩 · 최종 업데이트 <span id="updatedAt">2026-11-18</span></div>
   </div>
 </footer>
 
-<script src="assets/js/card.js"></script>
-<script src="assets/js/app.js"></script>
-<script src="assets/js/toast-data.js"></script>
-<script src="assets/js/toast.js"></script>
+<script src="assets/js/card.js?v=20261126"></script>
+<script src="assets/js/app.js?v=20261126"></script>
+<script src="assets/js/toast-data.js?v=20261126"></script>
+<script src="assets/js/toast.js?v=20261126"></script>
 </body>
 </html>
