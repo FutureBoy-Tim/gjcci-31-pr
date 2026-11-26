@@ -55,7 +55,11 @@
     "email": "92***@naver.com",
     "bizno": "357-**-*****"
    },
-   "hasPrivate": true
+   "hasPrivate": true,
+   "realCard": {
+    "front": "assets/realcards/m02/front.jpg",
+    "back": "assets/realcards/m02/back.jpg"
+   }
   },
   {
    "id": "m03",
@@ -487,7 +491,11 @@
     "email": "wo***@naver.com",
     "bizno": "-"
    },
-   "hasPrivate": true
+   "hasPrivate": true,
+   "realCard": {
+    "front": "assets/realcards/m20/front.jpg",
+    "back": "assets/realcards/m20/back.jpg"
+   }
   },
   {
    "id": "m21",
@@ -559,7 +567,11 @@
     "email": "gu***@gmail.com",
     "bizno": "448-**-*****"
    },
-   "hasPrivate": true
+   "hasPrivate": true,
+   "realCard": {
+    "front": "assets/realcards/m23/front.jpg",
+    "back": "assets/realcards/m23/back.jpg"
+   }
   },
   {
    "id": "m24",
@@ -799,7 +811,11 @@
     "email": "72***@hanmail.net",
     "bizno": "-"
    },
-   "hasPrivate": true
+   "hasPrivate": true,
+   "realCard": {
+    "front": "assets/realcards/m33/front.jpg",
+    "back": "assets/realcards/m33/back.jpg"
+   }
   },
   {
    "id": "m34",
@@ -871,7 +887,11 @@
     "email": "ls***@naver.com",
     "bizno": "-"
    },
-   "hasPrivate": true
+   "hasPrivate": true,
+   "realCard": {
+    "front": "assets/realcards/m36/front.jpg",
+    "back": "assets/realcards/m36/back.jpg"
+   }
   },
   {
    "id": "m37",
@@ -1231,7 +1251,11 @@
     "email": "-",
     "bizno": "-"
    },
-   "hasPrivate": true
+   "hasPrivate": true,
+   "realCard": {
+    "front": "assets/realcards/m51/front.jpg",
+    "back": "assets/realcards/m51/back.jpg"
+   }
   },
   {
    "id": "m52",
