@@ -84,7 +84,7 @@ function vCardHTML(m, opts) {
     : `<span class="v-mono">${escH((m.name || "?").trim().slice(0, 1))}</span>`;
   const inner = `
       <div class="v-top"><span>광진구상공회 31기</span><span>CEO</span></div>
-      <div class="v-photo">${photo}</div>
+      <div class="v-photo">${photo}${m.realCard && (m.realCard.front || m.realCard.back) ? '<span class="v-real">실제 명함</span>' : ""}</div>
       <div class="v-body">
         <div class="v-name">${escH(m.name)}${title}</div>
         <div class="v-co">${escH(co)}</div>
@@ -312,26 +312,52 @@ const UA = navigator.userAgent || "";
 const IS_MOBILE = /Android|iPhone|iPad|iPod/i.test(UA) || (navigator.maxTouchPoints > 1 && /Macintosh/i.test(UA));
 const IN_APP = /KAKAOTALK|NAVER\(inapp|Instagram|FBAN|FBAV|Line\/|DaumApps|BAND\//i.test(UA);
 const cardImageUrl = m => `assets/cards/${encodeURIComponent(m.id)}.jpg`;
-const cardFiles = new Map();   // 회원 id → 준비된 이미지 파일(Promise)
+const preparedFiles = new Map();   // 이미지 key → 준비된 파일(Promise)
 
-function prepareCardFile(m) {
-  if (cardFiles.has(m.id)) return cardFiles.get(m.id);
+// 저장 대상 하나를 나타내는 묶음: 디지털 명함 / 실제 명함(앞·뒤)
+function cardItem(m) {
+  return {
+    key: "card:" + m.id,
+    url: cardImageUrl(m),
+    name: fileNameOf(m, "jpg"),
+    alt: `${m.name} 디지털 명함`,
+    fallbackBlob: () => window.CardArt.toJPEG(m, 1.5, 0.92),
+    fallbackDataUrl: () => window.CardArt.toDataURL(m, 1.2)
+  };
+}
+const REAL_SIDES = [["front", "앞면"], ["back", "뒷면"]];
+function realCardItems(m) {
+  const rc = m.realCard || {};
+  const safe = String(m.name || "member").replace(/[\\/:*?"<>|]/g, "");
+  return REAL_SIDES.filter(([k]) => !isBlank(rc[k])).map(([k, label]) => ({
+    key: `real:${m.id}:${k}`,
+    side: k,
+    label,
+    url: rc[k],
+    name: `광진구상공회31기_${safe}_실제명함_${label}.jpg`,
+    alt: `${m.name} 실제 명함 ${label}`
+  }));
+}
+
+function prepareFile(item) {
+  if (preparedFiles.has(item.key)) return preparedFiles.get(item.key);
   const p = (async () => {
     let blob = null;
     try {
-      const res = await fetch(cardImageUrl(m));
+      const res = await fetch(item.url);
       if (res.ok) blob = await res.blob();
-    } catch (e) { /* 아래에서 직접 그린다 */ }
-    if (!blob || !/^image\//.test(blob.type) || blob.size < 2000) {
-      blob = await window.CardArt.toJPEG(m, 1.5, 0.92);
+    } catch (e) { /* 아래에서 대체 방법을 쓴다 */ }
+    if ((!blob || !/^image\//.test(blob.type) || blob.size < 2000) && item.fallbackBlob) {
+      blob = await item.fallbackBlob();
     }
-    if (!blob) throw new Error("no image");
-    const file = new File([blob], fileNameOf(m, "jpg"), { type: "image/jpeg" });
+    if (!blob || blob.size < 500) throw new Error("no image");
+    const type = /^image\//.test(blob.type) ? blob.type : "image/jpeg";
+    const file = new File([blob], item.name, { type });
     p.ready = file;
     return file;
   })();
-  p.catch(() => cardFiles.delete(m.id));
-  cardFiles.set(m.id, p);
+  p.catch(() => preparedFiles.delete(item.key));
+  preparedFiles.set(item.key, p);
   return p;
 }
 
@@ -341,11 +367,11 @@ function canShareFile(file) {
 }
 
 // 반환값: "shared" | "downloaded" | "manual" | "cancel"
-async function saveCardImage(m) {
-  const p = prepareCardFile(m);
+async function saveImage(item) {
+  const p = prepareFile(item);
   let file = p.ready;
   if (!file) {
-    try { file = await p; } catch (e) { openSaveGuide(m); return "manual"; }
+    try { file = await p; } catch (e) { openSaveGuide(item); return "manual"; }
   }
   if (IS_MOBILE && canShareFile(file)) {
     try {
@@ -357,21 +383,39 @@ async function saveCardImage(m) {
     }
   }
   if (IN_APP || (IS_MOBILE && /iPhone|iPad|iPod/i.test(UA) && !canShareFile(file))) {
-    openSaveGuide(m);
+    openSaveGuide(item);
     return "manual";
   }
   try {
     saveBlob(file, file.name);
     return "downloaded";
   } catch (e) {
-    openSaveGuide(m);
+    openSaveGuide(item);
     return "manual";
   }
 }
 
+// 여러 장(앞·뒤)을 한 번에 전달 — 공유 시트가 있으면 함께, 없으면 차례로 저장
+async function shareImages(items, title) {
+  const files = [];
+  for (const it of items) {
+    const p = prepareFile(it);
+    try { files.push(p.ready || await p); } catch (e) { /* 건너뜀 */ }
+  }
+  if (!files.length) { if (items[0]) openSaveGuide(items[0]); return "manual"; }
+  let ok = false;
+  try { ok = !!(navigator.share && navigator.canShare && navigator.canShare({ files })); } catch (e) { ok = false; }
+  if (ok) {
+    try { await navigator.share({ files, title }); return "shared"; }
+    catch (e) { if (e && e.name === "AbortError") return "cancel"; }
+  }
+  if (IN_APP) { openSaveGuide(items[0]); return "manual"; }
+  files.forEach((f, i) => setTimeout(() => saveBlob(f, f.name), i * 500));
+  return "downloaded";
+}
+
 function saveResultToast(r) {
   if (r === "downloaded") toast(IS_MOBILE ? "명함 이미지를 저장했습니다 (갤러리·다운로드 폴더)" : "명함 이미지를 저장했습니다");
-  else if (r === "shared") toast("'이미지 저장'을 누르면 갤러리에 저장됩니다");
 }
 
 function downloadVCF(m) {
@@ -380,7 +424,7 @@ function downloadVCF(m) {
 }
 
 /* ── 저장 안내 화면 (길게 눌러 저장) ─────── */
-function openSaveGuide(m) {
+function openSaveGuide(item) {
   let box = document.getElementById("lightbox");
   if (!box) {
     box = document.createElement("div");
@@ -400,19 +444,20 @@ function openSaveGuide(m) {
     document.addEventListener("keydown", e => { if (e.key === "Escape") closeLightbox(); });
   }
   const img = box.querySelector("img");
-  img.alt = `${m.name} 디지털 명함`;
+  img.alt = item.alt || "명함 이미지";
   img.onerror = async () => {
     img.onerror = null;
-    try { img.src = await window.CardArt.toDataURL(m, 1.2); } catch (e) { /* 그대로 둔다 */ }
+    if (!item.fallbackDataUrl) return;
+    try { img.src = await item.fallbackDataUrl(); } catch (e) { /* 그대로 둔다 */ }
   };
-  img.src = cardImageUrl(m);
+  img.src = item.url;
   const acts = box.querySelector(".lb-actions");
-  const abs = new URL(cardImageUrl(m), location.href).href;
-  let html = `<a class="btn btn-accent" href="${cardImageUrl(m)}" download="${escH(fileNameOf(m, "jpg"))}">⬇ 파일로 내려받기</a>`;
+  const abs = new URL(item.url, location.href).href;
+  let html = `<a class="btn btn-accent" href="${escH(item.url)}" download="${escH(item.name)}">⬇ 파일로 내려받기</a>`;
   if (/KAKAOTALK/i.test(UA)) {
     html += `<a class="btn btn-line" href="kakaotalk://web/openExternal?url=${encodeURIComponent(location.href)}">🌐 다른 브라우저로 열기</a>`;
   } else {
-    html += `<a class="btn btn-line" href="${abs}" target="_blank" rel="noopener">🖼 이미지만 새 창으로</a>`;
+    html += `<a class="btn btn-line" href="${escH(abs)}" target="_blank" rel="noopener">🖼 이미지만 새 창으로</a>`;
   }
   acts.innerHTML = html;
   box.classList.add("on");
@@ -475,6 +520,8 @@ async function initDetail() {
     .filter(x => x.id !== m.id && x.category === m.category && m.category !== "업종 미입력")
     .slice(0, 8);
 
+  const realItems = realCardItems(m);
+
   const subParts = [];
   if (!isBlank(m.title)) subParts.push(m.title);
   if (!isBlank(m.company)) subParts.push(m.company);
@@ -495,6 +542,27 @@ async function initDetail() {
       <button class="btn btn-accent" id="btnVcf">＋ 연락처에 저장 <span class="x">(vCard)</span></button>
       <button class="btn btn-line" id="btnCopy">🔗 명함 링크 복사</button>
     </div>
+
+    ${realItems.length ? `
+    <section class="real-card" id="realCard">
+      <div class="real-head">
+        <h2>실제 명함</h2>
+        <p>이미지를 누르면 저장됩니다. 받은 그대로 전달하거나 쓰실 수 있습니다.</p>
+      </div>
+      <div class="real-grid${realItems.length === 1 ? " one" : ""}">
+        ${realItems.map(it => `
+        <figure class="real-item">
+          <button type="button" class="real-img" data-real="${it.side}" aria-label="${escH(it.alt)} 저장">
+            <img src="${escH(it.url)}" alt="${escH(it.alt)}" loading="lazy" decoding="async" />
+          </button>
+          <figcaption>${it.label}</figcaption>
+        </figure>`).join("")}
+      </div>
+      <div class="card-actions real-actions">
+        ${realItems.map(it => `<button class="btn btn-primary" data-real="${it.side}">⬇ ${it.label} 저장</button>`).join("")}
+        <button class="btn btn-line" id="btnRealShare">📤 실제 명함 전달하기</button>
+      </div>
+    </section>` : ""}
 
     <div class="member-title-row">
       <h1>${m.name}</h1>
@@ -549,15 +617,39 @@ async function initDetail() {
   });
 
   // 누르는 즉시 저장되도록 이미지 파일을 미리 준비해 둔다
-  prepareCardFile(m).catch(() => {});
+  const digital = cardItem(m);
+  prepareFile(digital).catch(() => {});
+  realItems.forEach(it => prepareFile(it).catch(() => {}));
 
   let saving = false;
   async function saveNow() {
     if (saving) return;
     saving = true;
-    try { saveResultToast(await saveCardImage(m)); }
-    catch (err) { openSaveGuide(m); }
+    try { saveResultToast(await saveImage(digital)); }
+    catch (err) { openSaveGuide(digital); }
     saving = false;
+  }
+
+  // 실제 명함: 이미지·버튼 모두 같은 저장 흐름
+  const realBox = document.getElementById("realCard");
+  if (realBox) {
+    realBox.addEventListener("click", async (e) => {
+      const t = e.target.closest("[data-real]");
+      if (!t || saving) return;
+      const it = realItems.find(x => x.side === t.dataset.real);
+      if (!it) return;
+      saving = true;
+      try { saveResultToast(await saveImage(it)); }
+      catch (err) { openSaveGuide(it); }
+      saving = false;
+    });
+    document.getElementById("btnRealShare").addEventListener("click", async () => {
+      if (saving) return;
+      saving = true;
+      try { saveResultToast(await shareImages(realItems, `${m.name} 명함`)); }
+      catch (err) { openSaveGuide(realItems[0]); }
+      saving = false;
+    });
   }
   stage.addEventListener("click", saveNow);
   stage.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); saveNow(); } });

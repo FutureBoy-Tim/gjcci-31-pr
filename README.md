@@ -38,3 +38,17 @@
 
 광진구상공회 회원수첩 31기 회원 상세 정보 · 2026-11-18 수집.
 52명 중 27명은 회원수첩에 직장명·직위·업종이 등록되어 있지 않아 `업종 미입력`으로 표시됩니다.
+
+## 실제 명함 올리기
+
+회원에게서 받은 실제 명함(사진·스캔)을 상세 페이지에 그대로 올려, 누르면 저장하거나 전달할 수 있게 합니다.
+
+```
+python tools/add_realcard.py 구영모 "받은파일/앞.jpg" "받은파일/뒤.jpg"   # 이름 또는 m02 같은 id
+python tools/add_realcard.py m02 --back "받은파일/뒤.png"                 # 뒷면만 추가·교체
+python tools/add_realcard.py m02 --remove                                 # 내리기
+```
+
+- 이미지는 `assets/realcards/{id}/front.jpg`, `back.jpg`로 저장되고 `data/members.json`의 해당 회원에 `realCard`가 기록됩니다.
+- 방향만 바로잡고 JPG로 바꿉니다(긴 변 2000px 이하). 내용은 자르거나 고치지 않습니다.
+- 실행 후 commit·push 하면 상세 페이지에 "실제 명함" 영역이, 메인 흐름 카드에 "실제 명함" 표시가 나타납니다.
