@@ -275,7 +275,11 @@
     "email": "bo***@naver.com",
     "bizno": "-"
    },
-   "hasPrivate": true
+   "hasPrivate": true,
+   "realCard": {
+    "front": "assets/realcards/m11/front.jpg",
+    "back": "assets/realcards/m11/back.jpg"
+   }
   },
   {
    "id": "m12",
@@ -839,7 +843,11 @@
     "email": "ks***@gmail.com",
     "bizno": "-"
    },
-   "hasPrivate": true
+   "hasPrivate": true,
+   "realCard": {
+    "front": "assets/realcards/m34/front.jpg",
+    "back": "assets/realcards/m34/back.jpg"
+   }
   },
   {
    "id": "m35",
@@ -915,7 +923,11 @@
     "email": "he***@theraum.co.kr",
     "bizno": "-"
    },
-   "hasPrivate": true
+   "hasPrivate": true,
+   "realCard": {
+    "front": "assets/realcards/m37/front.jpg",
+    "back": "assets/realcards/m37/back.jpg"
+   }
   },
   {
    "id": "m38",
@@ -1131,7 +1143,10 @@
     "email": "wh***@naver.com",
     "bizno": "-"
    },
-   "hasPrivate": true
+   "hasPrivate": true,
+   "realCard": {
+    "front": "assets/realcards/m46/front.jpg"
+   }
   },
   {
    "id": "m47",
