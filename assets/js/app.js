@@ -642,6 +642,20 @@ async function initDetail() {
   // 실제 명함: 이미지·버튼 모두 같은 저장 흐름
   const realBox = document.getElementById("realCard");
   if (realBox) {
+    // 표시 크기 통일 — 가로 명함은 모두 9:5, 세로 명함은 그 크기를 세워 놓은 5:9
+    realBox.querySelectorAll(".real-img img").forEach(img => {
+      const fit = () => {
+        const w = img.naturalWidth, h = img.naturalHeight;
+        if (!w || !h) return;
+        const portrait = h > w;
+        img.closest(".real-item").classList.toggle("portrait", portrait);
+        const target = portrait ? 5 / 9 : 9 / 5;
+        // 규격과 거의 같으면 꽉 채우고, 많이 다르면 잘리지 않게 전체를 보여 준다
+        img.classList.toggle("fit-all", Math.abs((w / h) / target - 1) > 0.05);
+      };
+      if (img.complete) fit();
+      img.addEventListener("load", fit);
+    });
     realBox.addEventListener("click", async (e) => {
       const t = e.target.closest("[data-real]");
       if (!t || saving) return;
